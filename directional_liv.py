@@ -187,10 +187,11 @@ if __name__ == "__main__" :
     nu_declination_deg_values = np.linspace(-90., +90., num=5)
 
     fig_cz, ax_cz = plt.subplots(nu_declination_deg_values.size, figsize=(6, 8))
+    fig_L, ax_L = plt.subplots(nu_declination_deg_values.size, figsize=(6, 8))
     fig_P, ax_P = plt.subplots(nu_declination_deg_values.size, figsize=(6, 8))
 
     title = r"$E$ = %0.3g GeV, RA = %0.3g deg" % (E_GeV, nu_RA_deg)
-    for fig in [fig_cz, fig_P] :
+    for fig in [fig_cz, fig_L, fig_P] :
         fig.suptitle(title)
 
     for i, nu_declination_deg in enumerate(nu_declination_deg_values) :
@@ -208,6 +209,10 @@ if __name__ == "__main__" :
         # Get baseline
         L_icecube_km = calc_path_length_from_coszen(cz=nu_coszen_icecube, d=1.) #TODO correct detector depths
         L_dune_fd_km = calc_path_length_from_coszen(cz=nu_coszen_dune_fd, d=1.) #TODO correct detector depths
+
+        # Plot
+        ax_L[i].plot(dt_hrs, L_icecube_km, color="blue", lw=3, label="IceCube")
+        ax_L[i].plot(dt_hrs, L_dune_fd_km, color="red", lw=3, label="DUNE")
 
         # Get osc prob
         P_icecube = P_mu_mu(
@@ -242,18 +247,28 @@ if __name__ == "__main__" :
         physics_text = r"$\delta$ = %0.3g deg"%nu_declination_deg
         bbox = dict(boxstyle='round', facecolor='white', alpha=0.8)
         ax_cz[i].annotate(physics_text, xy=(23.8, -0.91), ha="right", va="bottom", fontsize=12, bbox=bbox)
+        ax_L[i].annotate(physics_text, xy=(23.8, 1.1e3), ha="right", va="bottom", fontsize=12, bbox=bbox)
         ax_P[i].annotate(physics_text, xy=(23.8, 0.05), ha="right", va="bottom", fontsize=12, bbox=bbox)
 
         # Format
         ax_cz[i].set(ylabel=r'$\cos(\theta)$', ylim=(-1.02, 1.02), xlim=(dt_hrs[0], dt_hrs[-1]) )
         ax_cz[i].grid()
 
+        ax_L[i].set(ylabel=r'$L$ [km]', ylim=(0., 1.05*12700.), xlim=(dt_hrs[0], dt_hrs[-1]) )
+        ax_L[i].grid()
+
         ax_P[i].set(ylabel=r'$P_{\mu \mu}$', ylim=(-0.02, 1.02), xlim=(dt_hrs[0], dt_hrs[-1]) )
         ax_P[i].grid()
+
+    plt.subplots_adjust(hspace=.0)
 
     ax_cz[-1].set(xlabel="t [hr]")
     ax_cz[-1].legend(loc="lower left", fontsize=12)
     fig_cz.tight_layout(rect=(0., 0., 1., 0.96))
+
+    ax_L[-1].set(xlabel="t [hr]")
+    ax_L[-1].legend(loc="lower left", fontsize=12)
+    fig_L.tight_layout(rect=(0., 0., 1., 0.96))
 
     ax_P[-1].set(xlabel="t [hr]")
     ax_P[-1].legend(loc="lower left", fontsize=12)
@@ -261,6 +276,10 @@ if __name__ == "__main__" :
 
     figname = "coszen_vs_time.png"
     fig_cz.savefig(figname)
+    print("Saved: %s" % figname)
+
+    figname = "L_vs_time.png"
+    fig_L.savefig(figname)
     print("Saved: %s" % figname)
 
     figname = "Pmm_vs_time.png"
